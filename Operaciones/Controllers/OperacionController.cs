@@ -17,7 +17,6 @@ namespace Operaciones.Controllers
             this.operacionService = operacionService;
         }
 
-        // POST: OperacionController/Create
         [HttpPost]
         public async Task<IActionResult> CrearOperacion([FromBody] EntradaCrearOperacion entradaOperacion)
         {
@@ -26,13 +25,53 @@ namespace Operaciones.Controllers
 
             if (!salida.Ok)
             {
-                response.Resultado.AgregarError(GestionErrores.O_Men_200, 400, mensaje: salida.Mensaje, codigoInterno: GestionErrores.O_Cod_200);
+                response.Resultado.AgregarError(GestionErrores.O_Men_2000, 400, mensaje: salida.Mensaje, codigoInterno: GestionErrores.O_Cod_2000);
 
                 return response.ObtenerResult();
             }
 
             response.Resultado.Datos = salida;
 
+            return Ok(response);
+        }
+
+        [HttpGet("tipo-operacion")]
+        public IActionResult ObtenerTipoOperacion()
+        {
+            var response = new RespuestaApi<List<TipoOperacion>>();
+            response.Resultado.Datos = operacionService.OptenerTipoOperacion();
+
+            return Ok(response);
+        }
+
+        [HttpGet("conceptos/{tipo_operacion}")]
+        public async Task<IActionResult> ObtenerConcepto(int tipo_operacion)
+        {
+            var response = new RespuestaApi<List<Concepto>>();
+            var salida = await operacionService.OptenerConceptos(tipo_operacion);
+            if (!salida.respuestaBD.Ok)
+            {
+                response.Resultado.AgregarError(GestionErrores.O_Men_2001 , 400, mensaje: salida.respuestaBD.Mensaje, codigoInterno: GestionErrores.O_Cod_2001);
+
+                return response.ObtenerResult();
+            }
+            response.Resultado.Datos = salida.listaConceptos;
+            return Ok(response);
+        }
+
+        [HttpGet("operaciones/{id}")]
+        public async Task<IActionResult> ObtenerOperacionesCuenta(int id)
+        {
+            var response = new RespuestaApi<IEnumerable<OperacionesCuenta>>();
+            var salida = await operacionService.ObtenerOperacionesCuenta(id);
+
+            if (!salida.RespuestaBD.Ok)
+            {
+                response.Resultado.AgregarError(GestionErrores.C_Men_1000, 400, mensaje: salida.RespuestaBD.Mensaje, codigoInterno: GestionErrores.C_Cod_1000);
+
+                return response.ObtenerResult();
+            }
+            response.Resultado.Datos = salida.Operaciones;
             return Ok(response);
         }
     }
